@@ -29,7 +29,7 @@ func JSONRoute[ReqBodyT any, ResT any](handler func(req *Request[ReqBodyT]) (*Re
 		reqBody := new(ReqBodyT)
 		err := bodyDecoder.Decode(&reqBody)
 		if err != nil {
-			handleRequestError(http.StatusBadRequest, err, w)
+			handleRequestError(http.StatusBadRequest, err, w, req)
 			return
 		}
 
@@ -40,7 +40,7 @@ func JSONRoute[ReqBodyT any, ResT any](handler func(req *Request[ReqBodyT]) (*Re
 
 		res, resErr := handler(&reqObj)
 		if err != nil {
-			handleRequestError(resErr.Code(), err, w)
+			handleRequestError(resErr.Code(), err, w, req)
 			return
 		}
 
@@ -48,7 +48,7 @@ func JSONRoute[ReqBodyT any, ResT any](handler func(req *Request[ReqBodyT]) (*Re
 		err = bodyEncoder.Encode(res.body)
 		w.Header().Add("Content-Type", "application/json")
 		if err != nil {
-			handleRequestError(http.StatusInternalServerError, err, w)
+			handleRequestError(http.StatusInternalServerError, err, w, req)
 			return
 		}
 	}
@@ -62,7 +62,7 @@ func XMLRoute[ReqBodyT any, ResT any](handler func(req *Request[ReqBodyT]) (*Res
 		reqBody := new(ReqBodyT)
 		err := bodyDecoder.Decode(&reqBody)
 		if err != nil {
-			handleRequestError(http.StatusBadRequest, err, w)
+			handleRequestError(http.StatusBadRequest, err, w, req)
 			return
 		}
 
@@ -73,7 +73,7 @@ func XMLRoute[ReqBodyT any, ResT any](handler func(req *Request[ReqBodyT]) (*Res
 
 		res, resErr := handler(&reqObj)
 		if err != nil {
-			handleRequestError(resErr.Code(), err, w)
+			handleRequestError(resErr.Code(), err, w, req)
 			return
 		}
 
@@ -81,7 +81,7 @@ func XMLRoute[ReqBodyT any, ResT any](handler func(req *Request[ReqBodyT]) (*Res
 		err = bodyEncoder.Encode(res.body)
 		w.Header().Add("Content-Type", "application/json")
 		if err != nil {
-			handleRequestError(http.StatusInternalServerError, err, w)
+			handleRequestError(http.StatusInternalServerError, err, w, req)
 			return
 		}
 	}
@@ -95,7 +95,7 @@ func FormRoute[ReqBodyT any, ResT any](handler func(req *Request[ReqBodyT]) (*Re
 		reqBody := new(ReqBodyT)
 		err = unmarshalForm(req.Form, &reqBody)
 		if err != nil {
-			handleRequestError(http.StatusBadRequest, err, w)
+			handleRequestError(http.StatusBadRequest, err, w, req)
 			return
 		}
 
@@ -106,7 +106,7 @@ func FormRoute[ReqBodyT any, ResT any](handler func(req *Request[ReqBodyT]) (*Re
 
 		res, resErr := handler(&reqObj)
 		if err != nil {
-			handleRequestError(resErr.Code(), err, w)
+			handleRequestError(resErr.Code(), err, w, req)
 			return
 		}
 
@@ -114,7 +114,7 @@ func FormRoute[ReqBodyT any, ResT any](handler func(req *Request[ReqBodyT]) (*Re
 		err = bodyEncoder.Encode(res.body)
 		w.Header().Add("Content-Type", "application/json")
 		if err != nil {
-			handleRequestError(http.StatusInternalServerError, err, w)
+			handleRequestError(http.StatusInternalServerError, err, w, req)
 			return
 		}
 	}
