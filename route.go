@@ -1,6 +1,7 @@
 package strong
 
 import (
+	"context"
 	"encoding/json"
 	"encoding/xml"
 	"net/http"
@@ -11,14 +12,50 @@ type Request[T any] struct {
 	body *T
 }
 
+func (r Request[T]) Ctx() context.Context {
+	return r.raw.Context()
+}
+
+func (r Request[T]) Body() *T {
+	return r.body
+}
+
+func (r Request[T]) Header() *http.Header {
+	return &r.raw.Header
+}
+
+func (r Request[T]) Cookies() *http.CookieJar {
+	return r.Cookies()
+}
+
 type Response[T any] struct {
 	w    http.ResponseWriter
-	body *T
+	Body *T
 }
 
 type ResponseError interface {
 	error
 	Code() int
+}
+
+type responseError struct {
+	err  error
+	code int
+}
+
+func (e responseError) Error() string {
+	return e.err.Error()
+}
+
+func (e responseError) Code() int {
+	return e.code
+}
+
+func Error(code int, err error) responseError {
+	return responseError{
+		err:  err,
+		code: code,
+	}
 }
 
 // JSONRoute takes a strongly-typed handler function and returns a standard http.HandlerFunc
@@ -45,7 +82,7 @@ func JSONRoute[ReqBodyT any, ResT any](handler func(req *Request[ReqBodyT]) (*Re
 		}
 
 		bodyEncoder := json.NewEncoder(w)
-		err = bodyEncoder.Encode(res.body)
+		err = bodyEncoder.Encode(res.Body)
 		w.Header().Add("Content-Type", "application/json")
 		if err != nil {
 			handleRequestError(http.StatusInternalServerError, err, w, req)
@@ -78,7 +115,7 @@ func XMLRoute[ReqBodyT any, ResT any](handler func(req *Request[ReqBodyT]) (*Res
 		}
 
 		bodyEncoder := xml.NewEncoder(w)
-		err = bodyEncoder.Encode(res.body)
+		err = bodyEncoder.Encode(res.Body)
 		w.Header().Add("Content-Type", "application/json")
 		if err != nil {
 			handleRequestError(http.StatusInternalServerError, err, w, req)
@@ -111,7 +148,7 @@ func FormRoute[ReqBodyT any, ResT any](handler func(req *Request[ReqBodyT]) (*Re
 		}
 
 		bodyEncoder := json.NewEncoder(w)
-		err = bodyEncoder.Encode(res.body)
+		err = bodyEncoder.Encode(res.Body)
 		w.Header().Add("Content-Type", "application/json")
 		if err != nil {
 			handleRequestError(http.StatusInternalServerError, err, w, req)
